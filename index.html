@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>ThinkSound: Chain-of-Thought Reasoning in Multimodal Large Language Models for Audio Generation and Editing</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"> -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+
+    body {
+        font-family: 'Quicksand', sans-serif;
+        text-align: center;
+        padding: 0 20px 40px 20px;
+        background: linear-gradient(135deg, #fffffe, #f9fffe);
+        width: 800px;
+        margin: 40px auto;
+        color: #344055;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1 {
+        margin-bottom: 50px;
+        color: #2a3a4b;
+        font-weight: 700;
+        font-size: 2.8rem;
+        letter-spacing: 0.08em;
+        text-shadow: 0 1px 3px rgba(50, 80, 130, 0.15);
+    }
+
+    .chapter-title {
+        position: relative;
+        text-align: left;
+        font-size: 1.4rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        background: linear-gradient(90deg, #3148b1, #e0e2db);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        padding-left: 1.2em;
+        margin-bottom: 1em;
+        padding: 0.2em 0 0.5em 0.4em;
+    }
+
+    .chapter-title::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0.2em;
+        width: 6px; height: 100%;
+        background: #05efef;
+        transform: skewY(-12deg);
+        border-radius: 3px;
+    }
+    .chapter-title::after {
+        content: "";
+        position: absolute;
+        left: 0; bottom: 0;
+        width: 100%; height: 8px;
+        background: linear-gradient(135deg, #e97bcf, #e9edf0);
+        transform: skewX(-12deg);
+        border-radius: 4px 4px 0 0;
+    }
+
+
+
+    #video-selector {
+        width: 100%;
+        max-width: 900px;
+        margin: 30px auto 60px auto;
+        display: flex;
+        flex-direction: column;
+        gap: 60px;
+    }
+
+    .section {
+        background-color: #f0f7ff;
+        padding: 28px 32px;
+        border-radius: 14px;
+        box-shadow: 0 8px 14px rgba(159, 183, 226, 0.3);
+        margin-bottom: 60px;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .section:hover {
+        box-shadow: 0 12px 20px rgba(115, 154, 228, 0.45);
+    }
+    .link-block {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    /* 放大 publication-links 区域的按钮和图标 */
+    .publication-links .button {
+        font-size: 1.25rem;
+        padding: 0.9em 2.2em;
+    }
+    .publication-links .icon {
+        font-size: 1.6em;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        color: #24446e;
+        margin-bottom: 26px;
+        font-weight: 700;
+    }
+
+    .video-row {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .video-column {
+        width: 23%;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #ffffffcc;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(180, 200, 230, 0.3);
+        padding: 10px;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .video-column:hover {
+        box-shadow: 0 8px 14px rgba(120, 160, 210, 0.5);
+    }
+
+    .video-player-container {
+        width: 100%;
+        height: 190px;
+        position: relative;
+        background-color: #dde8fc;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 0 15px rgba(180, 200, 230, 0.7);
+    }
+
+    .video-player-container iframe, 
+    .video-player-container video {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .fullscreen-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(255, 255, 255, 0.85);
+        color: #4466aa;
+        border: 1px solid #a3c4f3;
+        padding: 6px 12px;
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .fullscreen-btn:hover {
+        background-color: #a3c4f3;
+        color: #fff;
+        border-color: #557a95;
+    }
+
+    .caption {
+        font-size: 1.3rem;
+        color: #2e4661;
+        margin-top: 18px;
+        margin-bottom: 20px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+
+    .video-title {
+        font-size: 1rem;
+        color: #557a95;
+        margin-top: 18px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+
+    .image-container {
+        margin: 40px auto;
+        text-align: center;
+        max-width: 960px;
+    }
+
+    .image-caption {
+        font-size: 1rem;
+        color: #5b738d;
+        margin-top: 12px;
+        font-style: italic;
+        letter-spacing: 0.02em;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 40px;
+        box-shadow: 0 4px 8px rgba(120, 140, 180, 0.2);
+        background-color: #f7fbff;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    caption {
+        font-style: italic;
+        text-align: center;
+        caption-side: bottom;
+        margin-top: 12px;
+        color: #557a95;
+        font-weight: 600;
+    }
+
+    th, td {
+        padding: 14px 12px;
+        text-align: center;
+        border-bottom: 1px solid #d3def3;
+        color: #344055;
+    }
+
+    th {
+        background-color: #dbe9ff;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+
+    .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .button-container .fold-btn {
+        flex: 0 0 23%;
+        margin-bottom: 12px;
+        background: #a7c3ff66;
+        border-radius: 8px;
+        border: 1px solid #8ea7d4;
+        color: #35508a;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px 0;
+        transition: background-color 0.3s ease;
+    }
+
+    .button-container .fold-btn:hover {
+        background: #aac7ffaa;
+    }
+
+    #prevBtn, #nextBtn {
+        background-color: #a7c3ffcc;
+        border: 1px solid #7b9de0;
+        padding: 10px 16px;
+        font-size: 22px;
+        color: #24446e;
+        border-radius: 10px;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 6px rgba(115, 150, 230, 0.5);
+    }
+
+    #prevBtn:hover, #nextBtn:hover {
+        background-color: #7eabffdd;
+        color: #1b2c4e;
+    }
+
+    /* Scrollbar for carousel */
+    #carousel::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    #carousel::-webkit-scrollbar-track {
+        background: #e0efff;
+        border-radius: 8px;
+    }
+
+    #carousel::-webkit-scrollbar-thumb {
+        background: #a3c4f3;
+        border-radius: 8px;
+    }
+
+
+
+    #carousel.dragging {
+        cursor: grabbing;
+        scroll-behavior: auto;
+    }
+
+
+
+
+    #carousel-container {
+        overflow: hidden;
+        width: 100%;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 10px;
+    }
+    #carousel-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+    }
+
+
+    #carousel {
+        display: flex;
+        scroll-behavior: smooth;
+        padding: 20px 50%; 
+        margin-left: -180px; 
+    }
+
+    .video-card {
+        flex: 0 0 360px; 
+        height: 240px; 
+        margin: 0 20px;
+        overflow: hidden; 
+        position: relative;
+        border-radius: 10px; 
+        overflow: hidden; 
+        border: 5px solid rgba(68, 102, 170, 0.3);
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+
+    .video-card video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; 
+        object-position: center;
+    }
+    .panel-title {
+        margin: 0 0 0.5em;
+        font-size: 1.0rem;
+        font-weight: 600;
+        color: #24446e;
+        border-bottom: 2px solid #0052cc;
+        padding-bottom: 0.25em;
+    }
+
+
+    .clone-card {
+        opacity: 0.5;
+        transform: scale(0.9);
+    }
+
+    .ablation-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    .ablation-table th, .ablation-table td {
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+        text-align: center;
+    }
+
+    .ablation-table caption {
+        caption-side: top;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .extract-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 30px;
+        margin-bottom: 24px;
+    }
+
+    .extract-text {
+        width: 40%;
+        background-color: #ffffff;
+        border: 2px solid #8a8a83;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .extract-text label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #4b6e24;
+    }
+
+    .extract-text textarea {
+        width: 90%;
+        height: 100px;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #4ba495;
+        border-radius: 10px;
+        resize: vertical;
+        background-color: #93c79d;
+        color: #333;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .extract-row video {
+        width: 360px;
+        height: 180px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(90, 120, 160, 0.4);
+        background-color: #000;
+    }
+
+    .video-row-beautiful {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 32px; 
+        margin-top: 24px;
+        flex-wrap: wrap; 
+    }
+
+
+    .video-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .video-table th,
+    .video-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        background-color: #fff;
+    }
+
+    .video-table th {
+        background-color: #f3f6fa;
+        font-weight: 600;
+        font-size: 14px; 
+        color: #24446e;
+    }
+    .video-table tbody td {
+    font-size: 14px;
+    }
+
+    .video-table .video-table-video {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        display: block;
+    }
+    .video-table video {
+        width: 200px;
+        height: 112px;
+        border-radius: 8px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+    .video-table video:hover {
+        transform: scale(1.05);
+    }
+    .video-poster {
+        width: 150px;
+        height: 180px; 
+        border-radius: 8px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+        object-fit: cover;
+    }
+
+    .video-row-beautiful {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin-top: 24px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0 12px;
+    }
+
+    .video-wrapper {
+        background: #f7f9fc;  
+        padding: 12px 16px;
+        border-radius: 16px; 
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 150px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        cursor: pointer;
+    }
+
+    .video-wrapper:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .video-wrapper video {
+        width: 100%;        
+        height: auto;    
+        border-radius: 12px;
+        background-color: #000;
+        box-shadow: 0 4px 14px rgba(90, 120, 160, 0.5);
+    }
+
+    .video-title {
+        margin-top: 12px;
+        font-size: 1.1rem;
+        color: #1e3559;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-align: center;
+        user-select: none;
+    }
+
+
+    .toggle-rows-btn {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 8px 20px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #fff;
+        background: linear-gradient(135deg, #4a90e2, #0052cc);
+        border: none;
+        border-radius: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .toggle-rows-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+    }
+    .toggle-rows-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .table-wrapper {
+        margin: 16px auto 0 auto;
+        overflow-x: auto;
+    }
+
+
+    #toggle-cols-btn {
+            position: absolute;
+            top: 1930px;
+            right: 400px;
+            z-index: 1000;
+            transform: translateY(-50%);
+            padding: 12px 8px;
+            background: linear-gradient(135deg, #4a90e2, #0052cc);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 1px;
+            display: inline-block;
+        }
+        
+        #toggle-cols-btn:hover {
+            background-color: #3a69b4;
+            transform: translateY(-50%) scale(1.05);
+        }
+        .video-wrapper img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            display: block;
+        }
+        .poster-img {
+            width: 120px;
+            height: auto;  
+        }
+
+        .panels-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2em;           
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1em;
+        }
+
+
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+            background: #fafafa;
+            padding: 1em;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+
+        .message {
+            display: flex;
+        }
+
+ 
+        .message.left {
+            justify-content: flex-start;
+        }
+
+ 
+        .message.right {
+            justify-content: flex-end;
+        }
+
+
+        .bubble {
+            max-width: 70%;
+            padding: 0.8em;
+            border-radius: 12px;
+            position: relative;
+            background: #f0f0f0;
+            line-height: 1.4;
+            color: #333;
+            font: 12px 'Quicksand', sans-serif;
+            font-weight: bold;
+        }
+
+
+        .message.left .bubble  { background: #e0f7fa;text-align: left; }
+        .message.right .bubble { background: #ffe0b2; }
+
+
+        .message.left .bubble::before {
+            content: "";
+            position: absolute;
+            left: -8px;
+            top: 12px;
+            border: 8px solid transparent;
+            border-right-color: #e0f7fa;
+        }
+        .message.right .bubble::before {
+            content: "";
+            position: absolute;
+            right: -8px;
+            top: 12px;
+            border: 8px solid transparent;
+            border-left-color: #ffe0b2;
+        }
+
+        .bubble video,
+        .bubble img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+        
+        .bubble audio {
+            width: 220px;
+            height: 32px;
+            display: block;
+            margin-top: 8px;
+        }
+
+
+
+</style>
+
+
+</head>
+<body>
+    <h1 style="font-size: 40px;display: flex;  width: 90vw; left: calc(-45vw + 50%); justify-content: center; align-items: center; position: relative;">ThinkSound: Chain-of-Thought Reasoning in Multimodal Large Language Models for Audio Generation and Editing</h1>
+    <!-- <div class="column has-text-centered">
+        <p dir="auto"><a href="https://arxiv.org/abs/2506.21448" rel="nofollow"><img src="https://camo.githubusercontent.com/d8617043c5be969759376b28adaf0620c3360f34567782a825b13e9945717a7a/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f61725869762d50617065722d253343434f4c4f522533452e737667" alt="arXiv" data-canonical-src="https://img.shields.io/badge/arXiv-Paper-%3CCOLOR%3E.svg" style="max-width: 100%; height: 28px;"></a>
+            <a href="https://github.com/liuhuadai/ThinkSound" rel="nofollow"><img src="https://img.shields.io/badge/GitHub-ThinkSound-blue?logo=Github&amp;style=flat-square" alt="githubio" data-canonical-src="https://img.shields.io/badge/GitHub-ThinkSound-blue?logo=Github&amp;style=flat-square" style="max-width: 100%; height: 28px;"></a>
+    </div>     -->
+    <div class="publication-links" style="margin-bottom: 20px;margin-top: -30px;">
+        <!-- PDF Link. -->
+        <span class="link-block">
+          <a href="https://arxiv.org/abs/2506.21448" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon">
+              <i class="fas fa-file-pdf"></i>
+            </span>
+            <span>Paper</span>
+          </a>
+        </span>
+        <!-- Code Link. -->
+        <span class="link-block">
+          <a href="https://github.com/liuhuadai/ThinkSound"
+            class="external-link button is-normal is-rounded is-dark">
+            <span class="icon">
+              <i class="fab fa-github"></i>
+            </span>
+            <span>Code</span>
+          </a>
+        </span>
+        <!-- Demo Link -->
+        <!-- <span class="link-block">
+          <a href="???"
+            class="external-link button is-normal is-rounded is-dark">
+            <span>🤗 Demo</span>
+          </a>
+        </span> -->
+      </div>
+    <strong style="font-size: 19px; display: block; margin-bottom: 20px;">
+        Click on any video to play or pause it 🎥.
+    </strong>
+    <div class="carousel-container" style="display: flex;  width: 90vw; left: calc(-45vw + 50%); justify-content: center; align-items: center; position: relative;">
+            
+        
+        <div id="carousel" style="max-width: 1000px; overflow: hidden ;margin: 0 auto;"></div>
+            <!-- Current video will be inserted here -->
+        </div>
+
+        
+    </div>
+    <!-- Abstract section -->
+    <div class="abstract" style="text-align: center;margin-top: 20px;"></div>
+        <h2 class="chapter-title">Abstract</h2>
+        <hr class="chapter-line">
+        <p style="text-align: left;">     While end-to-end video-to-audio generation has greatly improved, producing high-fidelity audio that authentically captures the nuances of visual content remains challenging. Like professionals in the creative industries, such generation requires sophisticated reasoning about items such as visual dynamics, acoustic environments, and temporal relationships. We present ThinkSound, a novel framework that leverages Chain-of-Thought (CoT) reasoning to enable stepwise, interactive audio generation and editing for videos. Our approach decomposes the process into three complementary stages: foundational foley generation that creates semantically coherent soundscapes, interactive object-centric refinement through precise user interactions, and targeted editing guided by natural language instructions. At each stage, a multimodal large language model generates contextually aligned CoT reasoning that guides a unified audio foundation model. Furthermore, we introduce AudioCoT, a comprehensive dataset with structured reasoning annotations that establishes connections between visual content, textual descriptions, and sound synthesis.  Experiments demonstrate that ThinkSound achieves state-of-the-art performance in video-to-audio generation across both audio metrics and CoT metrics and excels in out-of-distribution Movie Gen Audio benchmark.</p>
+    </div>
+    
+
+    
+
+    
+    <div id="video-id" class="caption" style="margin-top: 10px; font-weight: bold;"></div>
+</div>
+
+<script>
+const videoPaths = [
+    "https://github.com/user-attachments/assets/5e5e675b-2f5e-4055-9d0e-2c0e0129ef19",
+    "https://github.com/user-attachments/assets/3edad0de-4f97-4b22-bda0-7fd3f393c9b6",
+    "https://github.com/user-attachments/assets/22ad7974-743f-4484-96a3-488a584d78d1",
+    "https://github.com/user-attachments/assets/dd8b246d-a923-4cc2-889e-8eb72f105cea",
+    "https://github.com/user-attachments/assets/60767e25-7de7-440f-9bf4-7268d477945c",
+];
+
+const carousel = document.getElementById('carousel');
+
+
+
+    
+
+    
+
+
+function createVideoCard(src, index) {
+    const container = document.createElement('div');
+    container.className = 'video-card';
+
+    const video = document.createElement('video');
+    video.src = src;
+    video.style.pointerEvents = 'auto'; 
+    video.style.cursor = 'pointer'; 
+    video.setAttribute('playsinline', '');
+    video.style.width = '100%';
+    video.style.borderRadius = '10px';
+    video.style.backgroundColor = '#000';
+    const status = document.createElement('div');
+    status.className = 'status-indicator';
+    status.textContent = '▶'; 
+    Object.assign(status.style, {
+      position: 'absolute',
+      bottom: '8px',
+      left: '8px',
+      fontSize: '1.5em',
+      color: 'white',
+      textShadow: '0 0 4px rgba(0,0,0,0.6)',
+      pointerEvents: 'none',           
+    });
+    video.addEventListener('click', () => {
+        if (video.paused) {
+            video.play().catch(e => console.warn("Play error:", e));
+        } else {
+            video.pause();
+        }
+    });
+
+    
+    video.addEventListener('play', () => status.textContent = '❚❚');
+    video.addEventListener('pause', () => status.textContent = '▶');
+
+    video.addEventListener('play', () => {
+        const left = container.offsetLeft - carousel.offsetWidth / 2 + container.offsetWidth / 2;
+        carousel.scrollTo({ left, behavior: 'smooth' });
+    });
+
+    container.appendChild(video);
+    container.appendChild(status);
+
+    const rewindBtn = document.createElement('div');
+    rewindBtn.textContent = '⟲';
+    Object.assign(rewindBtn.style, {
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        fontSize: '1.3em',
+        color: 'white',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        borderRadius: '5px',
+        padding: '2px 6px',
+        cursor: 'pointer',
+        userSelect: 'none',
+    });
+
+    rewindBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        video.currentTime = 0;
+        video.play();
+    });
+
+    container.style.position = 'relative'; 
+    container.appendChild(rewindBtn);
+
+    return container;
+}
+
+videoPaths.forEach((src, i) => {
+    const originals = videoPaths.map((src, i) => createVideoCard(src, i));
+    const N = originals.length;
+    for (let r = 0; r < 3; r++) {
+        originals.forEach((_, j) => {
+            const card = createVideoCard(videoPaths[j], j);
+            carousel.appendChild(card);
+        });
+    }
+
+    originals.slice().reverse().forEach(card => {
+    carousel.appendChild(card.cloneNode(true));
+    });
+
+    originals.forEach(card => {
+    carousel.appendChild(card);
+    });
+
+    originals.forEach(card => {
+    carousel.appendChild(card.cloneNode(true));
+    });
+
+
+    const cardWidth = carousel.children[0].offsetWidth;
+    const style = getComputedStyle(carousel.children[0]);
+    const gap    = parseInt(style.marginRight || 0);
+    const sectionWidth = N * (cardWidth + gap);
+
+    carousel.scrollLeft = sectionWidth;
+
+    carousel.addEventListener('scroll', () => {
+    if (carousel.scrollLeft <= 0) {
+        carousel.scrollLeft += sectionWidth;
+    } else if (carousel.scrollLeft >= sectionWidth * 2) {
+        carousel.scrollLeft -= sectionWidth;
+    }
+    });
+});
+
+setTimeout(() => {
+    const cardWidth = 360;
+    const gap = 20;
+    const totalItemWidth = cardWidth/2+1.23*gap;
+
+    const middleIndex = Math.floor(videoPaths.length / 2)
+
+
+    carousel.scrollLeft = 3*totalItemWidth + (middleIndex-1) *2 * totalItemWidth;
+
+  const updateScales = () => {
+    const containerCenter = carousel.scrollLeft + carousel.offsetWidth / 2;
+    
+    
+    Array.from(carousel.children).forEach(card => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const positionRatio = (cardCenter - containerCenter) / (carousel.offsetWidth * 0.8);
+
+      const scale = 0.89 + 0.27 * Math.cos(positionRatio * Math.PI);
+      
+      card.style.transform = `scale(${scale})`;
+      card.style.opacity = 0.8 + 0.2 * (1 - Math.abs(positionRatio));
+    });
+    
+    requestAnimationFrame(updateScales);
+  };
+  updateScales();
+}, 100);
+
+let isDragging = false;
+let startX;
+let scrollLeft;
+
+carousel.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  
+
+  const inertia = 1.5 - Math.abs(carousel.scrollLeft - scrollLeft) / 1000;
+  const x = e.pageX - carousel.offsetLeft;
+  const walk = (x - startX) * 1.2 * Math.min(inertia, 1.2);
+  
+  carousel.scrollLeft = scrollLeft - walk;
+});
+
+carousel.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startX = e.pageX - carousel.offsetLeft;
+    scrollLeft = carousel.scrollLeft;
+    carousel.classList.add('dragging');
+});
+
+carousel.addEventListener('mouseleave', () => {
+    isDragging = false;
+    carousel.classList.remove('dragging');
+});
+
+carousel.addEventListener('mouseup', () => {
+    isDragging = false;
+    carousel.classList.remove('dragging');
+});
+
+carousel.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - carousel.offsetLeft;
+    const walk = (x - startX) * 1.2;
+    carousel.scrollLeft = scrollLeft - walk;
+});
+</script>
+
+
+
+
+    <div class="image-container">
+        <h2 class="chapter-title">Cooperate with video generation models</h2>
+        <hr class="chapter-line">
+        <p style="text-align: left; font-size: 16px; max-width: 96%; color: #333;">
+            Provide voiceovers for the videos generated by the video generation model. All videos are generated by the corresponding video generation model, and all audios are provided by ThinkSound.
+        </p>
+
+
+                <h3 class="video-title"style="margin: 24px auto 8px auto;">Veo3 + ThinkSound</h3>
+                <video class="video-card" controls style="width: 95%;height: auto;">
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/veo3/veo3.mp4" type="video/mp4">
+                    not supported.
+                </video>
+
+
+
+                <h3 class="video-title"style="margin: 24px auto 8px auto;">Sora + ThinkSound</h3>
+                <video class="video-card" controls style="width: 95%;height: auto;">
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/sora/sora.mp4" type="video/mp4">
+                    not supported.
+                </video>
+
+
+
+
+                <h3 class="video-title"style="margin: 24px auto 8px auto;">Movie Gen + ThinkSound</h3>
+                <video class="video-card" controls style="width: 95%;height: auto;">
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Moviegen/moviegen.mp4" type="video/mp4">
+                    not supported.
+                </video>
+
+
+
+    </div>
+
+
+
+    <!-- Image section -->
+    <div class="image-container">
+        <h2 class="chapter-title">Video-to-Audio Generation Comparisons on VGGSound (In-distribution)</h2>
+        <hr class="chapter-line">
+        <p style="text-align: left; font-size: 16px; max-width: 96%; color: #333;text-align: center">
+            Play or pause any video by clicking on it.
+        </p>
+
+        <div class= "table-wrapper">
+            <table id="video-table">
+            
+            </table>
+            
+            
+        </div>
+        <button id="toggle-rows-btn1" class="toggle-rows-btn">Show All Baselines</button>
+        <button id="toggle-rows-btn2" class="toggle-rows-btn">Show More Cases</button>
+    </div>
+
+
+
+
+
+<script>
+  const videoSets = {
+    set1: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/-KqXcm-I2zY_000087.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/-KqXcm-I2zY_000087.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/-KqXcm-I2zY_000087.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/-KqXcm-I2zY_000087.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/-KqXcm-I2zY_000087.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/-KqXcm-I2zY_000087.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/-KqXcm-I2zY_000087.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/-KqXcm-I2zY_000087.mp4' },
+    },
+
+    set2: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/1pViEqMXJH0_000030.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/1pViEqMXJH0_000030.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/1pViEqMXJH0_000030.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/1pViEqMXJH0_000030.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/1pViEqMXJH0_000030.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/1pViEqMXJH0_000030.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/1pViEqMXJH0_000030.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/1pViEqMXJH0_000030.mp4' },
+    },
+
+    set3: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/1u1orBeV4xI_000428.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/1u1orBeV4xI_000428.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/1u1orBeV4xI_000428.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/1u1orBeV4xI_000428.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/1u1orBeV4xI_000428.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/1u1orBeV4xI_000428.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/1u1orBeV4xI_000428.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/1u1orBeV4xI_000428.mp4' },
+    },
+
+    set4: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/55L7peYRB_Q_000120.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/55L7peYRB_Q_000120.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/55L7peYRB_Q_000120.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/55L7peYRB_Q_000120.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/55L7peYRB_Q_000120.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/55L7peYRB_Q_000120.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/55L7peYRB_Q_000120.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/55L7peYRB_Q_000120.mp4' },
+    },
+
+    set5: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/JFG4YvcJ3bo_000228.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/JFG4YvcJ3bo_000228.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/JFG4YvcJ3bo_000228.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/JFG4YvcJ3bo_000228.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/JFG4YvcJ3bo_000228.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/JFG4YvcJ3bo_000228.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/JFG4YvcJ3bo_000228.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/JFG4YvcJ3bo_000228.mp4' },
+    },
+
+
+    set7: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/xmTfE3F2huE_000854.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/xmTfE3F2huE_000854.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/xmTfE3F2huE_000854.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/xmTfE3F2huE_000854.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/xmTfE3F2huE_000854.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/xmTfE3F2huE_000854.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/xmTfE3F2huE_000854.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/xmTfE3F2huE_000854.mp4' },
+    },
+
+    set8: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/yLazKv68TeA_000078.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/yLazKv68TeA_000078.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/yLazKv68TeA_000078.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/yLazKv68TeA_000078.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/yLazKv68TeA_000078.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/yLazKv68TeA_000078.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/yLazKv68TeA_000078.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/yLazKv68TeA_000078.mp4' },
+    },
+
+    set9: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/YYRdv32TJnc_000184.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/YYRdv32TJnc_000184.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/YYRdv32TJnc_000184.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/YYRdv32TJnc_000184.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/YYRdv32TJnc_000184.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/YYRdv32TJnc_000184.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/YYRdv32TJnc_000184.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/YYRdv32TJnc_000184.mp4' },
+    },
+
+    set10: {
+        "Ground Truth":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/gt_video_best/ZaUaqnLdg6k_000030.mp4' },
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/think_sound_best/ZaUaqnLdg6k_000030.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mmaudio_vgg_best/ZaUaqnLdg6k_000030.mp4' },
+        "See&Hear":    { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/seeing_vgg_best/ZaUaqnLdg6k_000030.mp4' },
+        "V-AURA":          { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V-AURA-vgg_best/ZaUaqnLdg6k_000030.mp4' },
+        "Frieren":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/Frieren_vgg_best/ZaUaqnLdg6k_000030.mp4' },
+        "V2A-Mapper":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/V2A-Mapper-vgg_best/ZaUaqnLdg6k_000030.mp4' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/ZaUaqnLdg6k_000030.mp4' },
+    },
+
+    set11: {
+        "Ground Truth":    { video: 'https://github.com/user-attachments/assets/0341825a-2158-4b55-b445-815baa981aeb' },
+        "ThinkSound":      { video: 'https://github.com/user-attachments/assets/73b8842a-47c8-48cb-8e79-e9ce21a27808' },
+        "MMAudio":         { video: 'https://github.com/user-attachments/assets/fc612eac-3fe6-40cf-86ab-ebcaf9c0e052' },
+        "See&Hear":    { video: 'https://github.com/user-attachments/assets/463a78e0-3a2e-4dba-b192-1dd71056efad' },
+        "V-AURA":          { video: 'https://github.com/user-attachments/assets/5a9c04d2-e9be-428b-b6b6-85dd81b12a66' },
+        "Frieren":         { video: 'https://github.com/user-attachments/assets/927ceed0-ddbd-4036-bb17-3ab6f157f6e0' },
+        "V2A-Mapper":      { video: 'https://github.com/user-attachments/assets/b1492f4c-4f14-4f5d-942f-6251f4979e5f' },
+        "FoleyCrafter":      { video: 'https://github.com/user-attachments/assets/1189eb9d-e8e3-4ff6-8c9b-94a90f455ef8' },
+    },
+
+    set12: {
+        "Ground Truth":    { video: 'https://github.com/user-attachments/assets/14237a1d-995d-4134-8824-a4162a46ff1b' },
+        "ThinkSound":      { video: 'https://github.com/user-attachments/assets/3a8c136f-c1a6-4fe0-ab78-915b0e9ffa10' },
+        "MMAudio":         { video: 'https://github.com/user-attachments/assets/8cb255ae-a5f6-4a95-9399-d38056ecdefd' },
+        "See&Hear":    { video: 'https://github.com/user-attachments/assets/1e63b02a-19c4-4c31-83ab-46f2de1527ea' },
+        "V-AURA":          { video: 'https://github.com/user-attachments/assets/f4e51f75-b028-403e-b8b6-4dbb9bc66dcb' },
+        "Frieren":         { video: 'https://github.com/user-attachments/assets/a3247785-8a4a-4c0d-bba7-714ba2d27a23' },
+        "V2A-Mapper":      { video: 'https://github.com/user-attachments/assets/980ce318-c8a3-4757-84ac-e46803599adb' },
+        "FoleyCrafter":      { video: 'https://github.com/user-attachments/assets/8f660ae6-5b3f-459d-ac97-f5f0819b199f' },
+    },
+
+    set13: {
+        "Ground Truth":    { video: 'https://github.com/user-attachments/assets/2a91ad4d-e69d-47d4-9541-33288b72d05f' },
+        "ThinkSound":      { video: 'https://github.com/user-attachments/assets/420d4f55-bda5-4def-bbb4-892ccc365e74' },
+        "MMAudio":         { video: 'https://github.com/user-attachments/assets/a93ef387-d744-49f5-a1f6-7b1dc0000e1a' },
+        "See&Hear":    { video: 'https://github.com/user-attachments/assets/51e7ecc2-0261-49ad-91ff-80e21dade82f' },
+        "V-AURA":          { video: 'https://github.com/user-attachments/assets/c5145c4f-8d10-4ac0-9ff5-535ea8216b9d' },
+        "Frieren":         { video: 'https://github.com/user-attachments/assets/d78627ac-56d4-4789-81d9-3167a54d42a5' },
+        "V2A-Mapper":      { video: 'https://github.com/user-attachments/assets/e4a4c58f-55e7-428a-b795-761f3695a601' },
+        "FoleyCrafter":      { video: 'https://github.com/user-attachments/assets/6e21d20b-b4bc-4d92-b532-94c6d1b6435c' },
+    },
+
+    set14: {
+        "Ground Truth":    { video: 'https://github.com/user-attachments/assets/3460096e-9d16-4eef-b53a-06f17f019b5b' },
+        "ThinkSound":      { video: 'https://github.com/user-attachments/assets/f86cfffd-09ed-4c7c-a587-47553c2d3d9c' },
+        "MMAudio":         { video: 'https://github.com/user-attachments/assets/4179970d-f067-4280-907b-916a1341c1c3' },
+        "See&Hear":    { video: 'https://github.com/user-attachments/assets/ea600c08-dd46-4203-b562-733d2dbb5aec' },
+        "V-AURA":          { video: 'https://github.com/user-attachments/assets/d8479a58-d1e0-4881-82b3-c0f23eb43f78' },
+        "Frieren":         { video: 'https://github.com/user-attachments/assets/96977129-2aad-476d-893e-de936a806066' },
+        "V2A-Mapper":      { video: 'https://github.com/user-attachments/assets/587102ba-d019-48bb-9be9-9a89e23a19f7' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/0W_wPc-zV3I_000101.mp4' },
+    },
+
+    set15: {
+        "Ground Truth":    { video: 'https://github.com/user-attachments/assets/397c8dde-7e76-4a9c-90be-2c76a6d527d8' },
+        "ThinkSound":      { video: 'https://github.com/user-attachments/assets/1b764e33-b9b4-453e-8dcf-ec6527ad12ef' },
+        "MMAudio":         { video: 'https://github.com/user-attachments/assets/c98c2afc-014e-4ee1-9f84-358016b68d29' },
+        "See&Hear":    { video: 'https://github.com/user-attachments/assets/9e0b27c0-6170-43f6-af6a-03b3362ed602' },
+        "V-AURA":          { video: 'https://github.com/user-attachments/assets/1f26b701-3143-4cc9-a0f7-2fd11424c3e3' },
+        "Frieren":         { video: 'https://github.com/user-attachments/assets/10cceb91-413e-468c-8765-def7bb616c1c' },
+        "V2A-Mapper":      { video: 'https://github.com/user-attachments/assets/7edf0f1e-f136-4ab9-a3ba-cdfb7cf762f2' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/4p8n4Zf-WMM_000190.mp4' },
+    },
+
+    set16: {
+        "Ground Truth":    { video: 'https://github.com/user-attachments/assets/5fdc9b3f-0fe1-497b-b1af-caef82d8bda6' },
+        "ThinkSound":      { video: 'https://github.com/user-attachments/assets/b61de7a1-26b9-4b3f-9c5c-d061c3f8a393' },
+        "MMAudio":         { video: 'https://github.com/user-attachments/assets/d57f909f-fb38-4733-b7fb-86ef9f7b0e74' },
+        "See&Hear":    { video: 'https://github.com/user-attachments/assets/9f24f521-282c-4ddd-abed-ecb9e8045f05' },
+        "V-AURA":          { video: 'https://github.com/user-attachments/assets/269c1d60-6651-4afc-8e12-1ab6cec62c8a' },
+        "Frieren":         { video: 'https://github.com/user-attachments/assets/c60fffbf-e5c3-4273-baa4-f74ab83abaef' },
+        "V2A-Mapper":      { video: 'https://github.com/user-attachments/assets/26d80859-c8a4-40ed-87e4-71a472c9c1a9' },
+        "FoleyCrafter":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/best_foleycrafter/W1nb2hIeDKc_000021.mp4' },
+    },
+
+
+  };
+  const displayMap = {
+        set1: 'Playing Tennis\n Generate sounds of tennis hitting a racket and the ball bouncing, with distant tennis court ambient noise. Focus on clear tennis scene with realistic audio cues.',
+        set2: 'Printer Printing\nGenerate a continuous printer printing sound with periodic beeps and paper movement, plus a cat pawing at the machine. Add subtle ambient room noise for authenticity, keeping the focus on printing, beeps, and the cat\'s interaction.',
+        set3: 'Ripping Paper\nStart with a subtle tearing sound of paper being ripped, emphasizing a continuous, consistent noise. Ensure the sound has slight variations to mimic real tearing. No background or additional noises are needed, focusing solely on the tearing action.',
+        set4: 'Using Sewing Machines\nGenerate ambient sewing room sounds with consistent sewing machine hum and minimal background noise, focusing on characteristic machine noise to match the correct descriptions.',
+        set5: 'Playing Bongo\nGenerate a lively percussion track featuring only rhythmic drum beats—no other instruments or voices. Maintain a natural, well-balanced stereo mix to showcase the drums.',
+        set7: 'Chopping Food\nGenerate rhythmic chopping sounds consistent with cutting meat or vegetables, with occasional plastic bag rustles. Include ambient marketplace noise—vendors calling out, customers chatting, and cart wheels—to create a realistic outdoor market chopping scene.',
+        set8: 'People Eating Crisps\nGenerate audio focusing on clear, rhythmic chewing sounds of eating, without any crinkling paper or breathing noises. Maintain a natural, well-balanced mix to highlight the chewing activity.',
+        set9: 'Plastic Debris Handling\nBegin with the sound of hands scooping up loose plastic debris, followed by the subtle cascading noise as the pieces fall and scatter back down. Include soft crinkling and rustling to emphasize the texture of the plastic. Add ambient factory background noise with distant machinery to create an industrial atmosphere.',
+        set10: 'Skateboarding\nGenerate the audio featuring skateboarding sounds with wheels rolling on various surfaces, including ramps, rails, and sidewalks, capturing the sound of tricks and landings. Include subtle ambient background noise to suggest an outdoor setting, avoiding any human voices or singing. Focus on realistic skateboarding sounds, emphasizing wheel contact, impacts, and movement.',
+        set11: 'Hammering Nails\nGenerate audio with consistent hammering sounds, featuring a rhythmic pattern of nails being driven into a surface, with occasional ambient background sounds like birds chirping and distant traffic. Avoid human voices, focusing on realistic hammer strikes and natural outdoor environment sounds. Ensure the hammering tone is steady and clear, matching the description of continuous nail hammering.',
+        set12: 'Playing Trumpet\nGenerate a continuous trumpet sound with melodic variations, mimicking the sound of a person playing the trumpet ideally in a musical setting, ensuring clarity and realistic tone. Avoid extraneous noise or background sounds to reflect the focus on trumpet playing. The audio should resemble a skilled player producing expressive, melodious trumpet notes. Pay attention to pitch changes caused by hand movements.',
+        set13: 'Writing on Blackboard with Chalk\nThe audio should feature consistent sounds of chalk scratching the blackboard, including occasional voice instructions, encouragement, and children\'s chatter, with background music playing softly or fading in/out to match the scene\'s atmosphere. The sounds of laughter and chatter should be lively but balanced with the primary chalk and voice sounds for clarity. Overall, the audio combines educational sounds with background activity to reflect a classroom or play environment.',
+        set14: 'Hedge Trimmer Running\nGenerate the sound of a hedge trimmer running steadily, focusing on consistent motor noise and cutting sounds. Ensure minimal background noise or voices, capturing the primary sound of the trimmer in operation. Avoid including any chainsaw or unrelated sounds for accuracy.',
+        set15: 'Lighting Firecrackers\nGenerate the sound of firecrackers lighting and exploding repeatedly on the ground, followed by fireworks bursting in the sky. Incorporate occasional subtle echoes to mimic an outdoor night ambiance, with no human voices present.',
+        set16: 'Striking Bowling\nStart with a background of ambient music to set the scene of a bowling game, then add consistent sounds of bowling balls striking pins to emphasize the action. Include occasional subtle sounds of pins rattling and settling. Keep human voices or other noises minimal or absent for authenticity.',
+    };
+  
+    const posterMap = {
+        set1: 'first_frames/-KqXcm-I2zY_000087.jpg',
+        set2: 'first_frames/1pViEqMXJH0_000030.jpg',
+        set3: 'first_frames/1u1orBeV4xI_000428.jpg',
+        set4: 'first_frames/55L7peYRB_Q_000120.jpg',
+        set5: 'first_frames/JFG4YvcJ3bo_000228.jpg',
+        // set6: 'first_frames/Rp39_WnX5Fk_000380.jpg',
+        set7: 'first_frames/xmTfE3F2huE_000854.jpg',
+        set8: 'first_frames/yLazKv68TeA_000078.jpg',
+        set9: 'first_frames/YYRdv32TJnc_000184.jpg',
+        set10: 'first_frames/ZaUaqnLdg6k_000030.jpg',
+        set11: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/first_frames/_XyxrZDZ36E_000034.jpg ',
+        set12: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/first_frames/_ZC6yk5iE1I_000026.jpg ',
+        set13: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/first_frames/_Betmm6FaWo_000096.jpg',
+        set14: 'first_frames/0W_wPc-zV3I_000101.jpg',
+        set15: 'first_frames/4p8n4Zf-WMM_000190.jpg',
+        set16: 'first_frames/W1nb2hIeDKc_000021.jpg'
+    };
+    const table = document.getElementById('video-table');
+    table.classList.add('video-table');
+    const methods = Object.keys(videoSets.set1);
+
+
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    headRow.appendChild(Object.assign(document.createElement('th'), { textContent: 'CoT' }));
+    methods.forEach(m => headRow.appendChild(Object.assign(document.createElement('th'), { textContent: m })));
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+
+    const tbody = document.createElement('tbody');
+    Object.entries(videoSets).forEach(([setName, variants], rowIndex) => {
+      const tr = document.createElement('tr');
+      if (rowIndex >= 4) tr.style.display = 'none';
+      tr.appendChild(Object.assign(document.createElement('th'), {
+        innerHTML: (displayMap[setName] || setName).replace(/\n/g, '<br>'),
+        style: 'background-color:#eef2f7; color:#24446e;'
+      }));
+      methods.forEach(m => {
+        const td = document.createElement('td');
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('video-wrapper');
+        wrapper.style.cursor = 'pointer';  
+        
+
+        const img = document.createElement('img');
+        img.src = posterMap[setName]; 
+        img.style.width = '100%';
+        img.style.display = 'block';
+        
+        wrapper.appendChild(img);
+
+
+        wrapper.addEventListener('click', () => {
+        const video = document.createElement('video');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('controls', '');
+        video.autoplay = true;
+        video.classList.add('loaded-video', 'video-table-video');
+        video.src = variants[m].video; 
+        wrapper.innerHTML = '';
+        wrapper.appendChild(video);
+        });
+
+        td.appendChild(wrapper);
+        tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+
+    document.querySelectorAll('.lazy-video').forEach(vid => {
+        vid.addEventListener('play', function onPlay() {
+            const source = this.querySelector('source');
+            if (!source.src) {
+            source.src = this.dataset.src;
+            this.load();
+            this.play();
+            }
+            this.removeEventListener('play', onPlay);
+        });
+        });
+
+    const hideColFrom = 4;
+    function setColumnDisplay(showAll) {
+      table.querySelectorAll('thead th').forEach((th, i) => th.style.display = i >= hideColFrom && !showAll ? 'none' : '');
+      tbody.querySelectorAll('tr').forEach(row => {
+        Array.from(row.children).forEach((cell, i) => {
+          cell.style.display = i >= hideColFrom && !showAll ? 'none' : '';
+        });
+      });
+    }
+    setColumnDisplay(false);
+    const colsBtn = document.getElementById('toggle-rows-btn1');
+    let colsExpanded = false;
+    colsBtn.addEventListener('click', () => {
+      colsExpanded = !colsExpanded;
+      setColumnDisplay(colsExpanded);
+      colsBtn.textContent = colsExpanded ? 'Collapse' : 'Show All Baselines';
+    });
+
+
+    const rowsBtn = document.getElementById('toggle-rows-btn2');
+    let rowsExpanded = false;
+    rowsBtn.addEventListener('click', () => {
+      rowsExpanded = !rowsExpanded;
+      tbody.querySelectorAll('tr').forEach((tr, idx) => {
+        tr.style.display = idx >= 4 && !rowsExpanded ? 'none' : '';
+      });
+      rowsBtn.textContent = rowsExpanded ? 'Collapse' : 'Show More Cases';
+    });
+    
+</script>
+
+        
+
+    <div class="image-container">
+        <h2 class="chapter-title">Video to Audio Generation Comparisons on Movie Gen Audio Bench (Out-of-Distribution)</h2>
+        <hr class="chapter-line">
+        <p style="text-align: left; font-size: 16px; max-width: 96%; color: #333;text-align: center">
+            Play or pause any video by clicking on it.
+        </p>
+
+        <div class="table-wrapper">
+            <table id="video-table2">
+            </table>
+            <button id="toggle-rows-btn3" class="toggle-rows-btn">Show More Cases</button>
+        </div>
+    </div>
+<script>
+  const videoSets2 = {
+    set1: {
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/our_mg/10.mp4' },
+        "Movie Gen Audio":        { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/moviegen_mg/10.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/mmaudio_mg/10.mp4' },
+    },
+    set3: {
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/our_mg/114.mp4' },
+        "Movie Gen Audio":        { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/moviegen_mg/114.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/mmaudio_mg/114.mp4' },
+    },
+    set4: {
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/our_mg/284.mp4' },
+        "Movie Gen Audio":        { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/moviegen_mg/284.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/mmaudio_mg/284.mp4' },
+    },   
+    set5: {
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/our_mg/326.mp4' },
+        "Movie Gen Audio":        { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/moviegen_mg/326.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/mmaudio_mg/326.mp4' },
+    },
+    set6: {
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/our_mg/396.mp4' },
+        "Movie Gen Audio":        { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/moviegen_mg/396.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/mmaudio_mg/396.mp4' },
+    },
+    set7: {
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/our_mg/402.mp4' },
+        "Movie Gen Audio":        { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/moviegen_mg/402.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/mmaudio_mg/402.mp4' },
+    },
+    set8: {
+        "ThinkSound":      { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/our_mg/485.mp4' },
+        "Movie Gen Audio":        { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/moviegen_mg/485.mp4' },
+        "MMAudio":         { video: 'https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/compare/mg_demos/mmaudio_mg/485.mp4' },
+    }
+  };
+
+  const displayMap2 = {
+    set1: 'Gentle Sucking Sounds From the Pacifier\nBegin by creating a soft, steady background of light pacifier suckling. Add subtle, breathy rhythms to mimic a newborn\'s gentle mouth movements. Keep the sound smooth, natural, and soothing.',
+    set2: 'Coffee Pouring with a Smooth Gurgling Sound\nStart with a gentle pour of hot coffee into a cup, adding smooth gurgling to match the flow. Keep the overall audio calm and continuous to reflect a peaceful coffee-pouring scene.',
+    set3: 'Strings Humming and Buzzing Harmoniously, with Fingers Sliding and Pressing Strings.\nStart with acoustic guitar strings humming and buzzing. Include the sounds of fingers sliding and pressing the strings to match a riff. Add slight attack and decay variations to mimic playing. Mix string and finger sounds for a realistic guitar performance.',
+    set4: 'Flickering and Humming of the Old TV Set\nStart with ambient background noise that includes faint static and white noise to represent the TV\'s initial power-up. Incorporate subtle flickering and humming sounds that mimic the TV screen\'s instability and electrical components.',
+    set5: 'Distant Rumble of Thunder Becomes Louder and More Intense\nA low wind hum and occasional crackles add to the stormy atmosphere, signaling an approaching storm.',
+    set6: 'High-Pitched Scraping of the Tool Bit Against the Metal Rod\nBegin with a high-pitched, sustained scraping sound of the tool on the metal rod. Add a subtle, rhythmic mechanical hum to suggest lathe rotation. Include slight pitch and intensity variations to mimic metalworking, emphasizing a precise machining environment.',
+    set7: 'Metal Keys Clattering Against Metal Body\nBegin with the ambiance of a quiet newsroom room with a single person. Add the rhythmic sound of an old typewriter, focusing on the sharp metallic clatter of keys striking the body. Keep the texture continuous, emphasizing the tactile, metallic feedback.',
+    set8: 'The Skateboard Wheels Scraping and Grinding on the Ground.\nStart with steady rolling on a hard surface. Add sharp scraping and grinding sounds as wheels hit rough patches. Include a quick whoosh and foot contact for a flip trick.',
+  };
+
+  const posterMap2 = {
+    set1: 'first_frames/10.jpg',
+    set2: 'first_frames/104.jpg',
+    set3: 'first_frames/114.jpg',
+    set4: 'first_frames/284.jpg',
+    set5: 'first_frames/326.jpg',
+    set6: 'first_frames/396.jpg',
+    set7: 'first_frames/402.jpg',
+    set8: 'first_frames/485.jpg',
+  };
+
+  const table2 = document.getElementById('video-table2');
+  table2.classList.add('video-table');
+  const methods2 = Object.keys(videoSets2.set1);
+
+  const thead2 = document.createElement('thead');
+  const headRow2 = document.createElement('tr');
+  headRow2.appendChild(Object.assign(document.createElement('th'), { textContent: 'CoT' }));
+  methods2.forEach(m => headRow2.appendChild(Object.assign(document.createElement('th'), { textContent: m })));
+  thead2.appendChild(headRow2);
+  table2.appendChild(thead2);
+
+  const tbody2 = document.createElement('tbody');
+  Object.entries(videoSets2).forEach(([setName, variants], rowIndex) => {
+    const tr = document.createElement('tr');
+    tr.appendChild(Object.assign(document.createElement('th'), {
+      innerHTML: (displayMap2[setName] || setName).replace(/\n/g, '<br>'),
+      style: 'background-color:#eef2f7; color:#24446e;'
+    }));
+
+    methods2.forEach(m => {
+      const td = document.createElement('td');
+      const wrapper = document.createElement('div');
+      wrapper.classList.add('video-wrapper');
+      wrapper.style.cursor = 'pointer';
+
+      const img = document.createElement('img');
+      img.src = posterMap2[setName];
+      img.style.width = '100%';
+      img.style.display = 'block';
+      wrapper.appendChild(img);
+
+      wrapper.addEventListener('click', () => {
+        const video = document.createElement('video');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('controls', '');
+        video.autoplay = true;
+        video.classList.add('loaded-video', 'video-table-video');
+        video.src = variants[m].video;
+        wrapper.innerHTML = '';
+        wrapper.appendChild(video);
+      });
+
+      td.appendChild(wrapper);
+      tr.appendChild(td);
+    });
+
+    tbody2.appendChild(tr);
+  });
+
+  table2.appendChild(tbody2);
+  tbody2.querySelectorAll('tr').forEach((tr, idx) => {
+    tr.style.display = idx >= 4 ? 'none' : '';
+    });
+  const rowsBtn2 = document.getElementById('toggle-rows-btn3');
+    let rowsExpanded2 = false;
+    rowsBtn2.addEventListener('click', () => {
+      rowsExpanded2 = !rowsExpanded2;
+      tbody2.querySelectorAll('tr').forEach((tr, idx) => {
+        tr.style.display = idx >= 4 && !rowsExpanded2 ? 'none' : '';
+      });
+      rowsBtn2.textContent = rowsExpanded2 ? 'Collapse' : 'Show More Cases';
+    });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    <div class="image-container">
+        
+        <h2 class="chapter-title">Interactive Step-by-Step Foley Creation</h2>
+        <hr class="chapter-line">
+        <p style="text-align: left; font-size: 16px; max-width: 96%; color: #333;">
+            
+        </p>
+        <div class="panels-container">
+
+        <div class="chat-panel">
+    <h3 class="panel-title">Video-to-Audio Generation->Object-Focused Audio Generation->Audio Inpainting</h3>
+
+    <div class="message left">
+        <div class="bubble" style="text-align: left; text-indent: 1em;">
+        To generate a cheerful ukulele melody with light strumming, incorporating harmonious vocals resembling two young girls singing together, set against a simple, unobtrusive background. This includes subtle background music that complements the ukulele and vocals, evoking a joyful, relaxed atmosphere. The overall sound should be warm, lively, and authentic.
+        <video controls width="250">
+            <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/_8JGpCc5RI8_000160_silent.mp4" type="video/mp4">
+            not supported.
+        </video>
+
+        </div>
+    </div>
+
+    <div class="message right">
+        <div class="bubble">
+        Generated audio (paired with silent video):
+        <video controls width="250">
+            <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/_8JGpCc5RI8_000160_stage1.mp4" type="video/mp4">
+            not supported.
+        </video>
+        </div>
+    </div>
+
+    <div class="message left">
+        <div class="bubble" style="text-align: left; text-indent: 1em;">
+        To focus exclusively on the singing and corresponding hand movements, ensuring that the extracted audio reflects only the vocal expression and its physical accompaniment.
+        <video controls width="250">
+            <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/_8JGpCc5RI8_000160_stage1-box.mp4" type="video/mp4">
+            not supported.
+        </video>
+
+        </div>
+    </div>
+
+    <div class="message right">
+        <div class="bubble">
+        Generated audio (paired with silent video):
+        <video controls width="250">
+            <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/_8JGpCc5RI8_000160_stage2-box.mp4" type="video/mp4">
+            not supported.
+        </video>
+        </div>
+    </div>
+
+    <div class="message left">
+        <div class="bubble" style="text-align: left; text-indent: 1em;">
+        To test the model's ability to repair audio by providing another generated result for this video-to-audio task, where a segment is randomly masked by noise. The goal is to accurately restore the masked audio segment.
+
+        <audio controls>
+            <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/_8JGpCc5RI8_000160_source.wav" type="audio/wav">
+            not supported.
+        </audio>
+            <br><br> <!-- 添加一些空间 -->
+        <img src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/source.png" alt="Audio Spectrogram" style="max-width: 100%; height: auto;">
+    </div>
+    </div>
+
+
+
+    <div class="message right">
+        <div class="bubble">
+        Generated audio:
+        <audio controls>
+            <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/_8JGpCc5RI8_000160_stage3.wav" type="audio/wav">
+            not supported.
+        </audio>
+            <br><br> <!-- 添加一些空间 -->
+            <img src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter1/target.png" alt="Audio Spectrogram" style="max-width: 100%; height: auto;">
+        </div>
+    </div>
+
+
+    
+    </div>
+
+
+        <div class="chat-panel">
+            <h3 class="panel-title">Video-to-Audio Generation->Object-Focused Audio Generation->Audio Editing (Add Action)</h3>
+                <div class="message left">
+                <div class="bubble" style="text-align: left; text-indent: 1em;">
+                To generate a continuous background of gentle wind sounds overlaid with consistent warbler chirping, including natural variations in pitch and rhythm to mimic real bird calls, while keeping other sounds minimal and focusing on the warbler's chirping as the main audio element.
+                <video controls width="250">
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter2/p2m6Ei_vkSk_000000_no_audio.mp4" type="video/mp4">
+                    not supported.
+                </video>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="bubble">
+                    Generated audio (paired with silent video):
+                    <video controls width="250">
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter2/p2m6Ei_vkSk_000000_stage1.mp4" type="video/mp4">
+                    not supported.
+                </video>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="bubble" style="text-align: left; text-indent: 1em;">
+                    To extract audio from the region of interest (ROI), audio, and chain-of-thought (CoT), reducing the prominence of the wind by softening its low-frequency presence until it fades into the background. The warbler's chirping should remain crisp, clear, and rhythmically engaging as the main auditory focus.
+                <video controls width="250">
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter2/p2m6Ei_vkSk_000000_stage1-box.mp4" type="video/mp4">
+                    not supported.
+                </video>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="bubble">
+                    Generated audio (paired with silent video):
+                    <video controls width="250">
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter2/p2m6Ei_vkSk_000000_stage2-box.mp4" type="video/mp4">
+                    not supported.
+                </video>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="bubble" style="text-align: left; text-indent: 1em;">
+                    To edit audio from video, audio, and CoT by beginning with a steady backdrop of warbler chirping, maintaining its melodic and rhythmic consistency; then introducing a single robin call placed intermittently to add contrast and depth without disrupting the flow. The warbler should remain the focal point, with the robin serving as a gentle, occasional accent.
+                <audio controls>
+                    <source src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter2/p2m6Ei_vkSk_000000_stage2.wav" type="audio/wav">
+                    not supported.
+                </audio>
+                    <br><br> <!-- 添加一些空间 -->
+                    <img src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter2/source.png" alt="Audio Spectrogram" style="max-width: 100%; height: auto;">
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="bubble">
+                    Generated audio:
+                    <audio controls>
+                        <source src="interactive/iter2/p2m6Ei_vkSk_000000_stage3.wav" type="audio/wav">
+                        not supported.
+                    </audio>
+                    <br><br> <!-- 添加一些空间 -->
+                    <img src="https://raw.githubusercontent.com/ThinkSound-Demo/ThinkSound-Demo.github.io/main/interactive/iter2/target.png" alt="Audio Spectrogram" style="max-width: 100%; height: auto;">
+                </div>
+            </div>
+
+        </div>
+        </div>
+
+        
+
+        
+    
+        
+        
+
+
+
+
+    </div>
+        <h2 class="chapter-title"> Experiments</h2>
+        <hr class="chapter-line">
+        <div style="text-align: left;">
+            <h3> Main Results</h3>
+        </div>
+        <table class="ablation-table">
+            <caption>Table 1: Comparison of our ThinkSound foundation model with existing video-to-audio baselines on the VGGSound test set. ↓ indicates lower is better, ↑ indicates higher is better. For MOS, we show the mean and variance of the MOS scores. † indicates that the method does not use text for inference.</caption>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th colspan="6">Objective Metrics</th>
+                    <th colspan="2">Subjective Metrics</th>
+                    <th colspan="2">Efficiency</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>FD<br> ↓</th>
+                    <th>KL<sub>PaSST</sub> ↓</th>
+                    <th>KL<sub>PaNNs</sub> ↓</th>
+                    <th>DeSync ↓</th>
+                    <th>CLAP<sub>cap</sub> ↑</th>
+                    <th>CLAP<sub>CoT</sub> ↑</th>
+                    <th>MOS-Q <br>↑</th>
+                    <th>MOS-A ↑</th>
+                    <th>Params</th>
+                    <th>Time(s) ↓</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>GT</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>0.55</td>
+                    <td>0.28</td>
+                    <td>0.45</td>
+                    <td>4.37±0.21</td>
+                    <td>4.56±0.19</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>See&Hear</td>
+                    <td>118.95</td>
+                    <td>2.26</td>
+                    <td>2.30</td>
+                    <td>1.20</td>
+                    <td>0.32</td>
+                    <td>0.35</td>
+                    <td>2.75±1.08</td>
+                    <td>2.87±0.99</td>
+                    <td>415M</td>
+                    <td>19.42</td>
+                </tr>
+                <tr>
+                    <td>V-AURA†</td>
+                    <td>46.99</td>
+                    <td>2.23</td>
+                    <td>1.83</td>
+                    <td>0.65</td>
+                    <td>0.23</td>
+                    <td>0.37</td>
+                    <td>3.42±1.03</td>
+                    <td>3.20±1.17</td>
+                    <td>695M</td>
+                    <td>14.00</td>
+                </tr>
+                <tr>
+                    <td>FoleyCrafter</td>
+                    <td>39.15</td>
+                    <td>2.06</td>
+                    <td>1.89</td>
+                    <td>1.21</td>
+                    <td><strong>0.41</strong></td>
+                    <td>0.34</td>
+                    <td>3.08±1.21</td>
+                    <td>2.63±0.88</td>
+                    <td>1.20B</td>
+                    <td>3.84</td>
+                </tr>
+                <tr>
+                    <td>Frieren†</td>
+                    <td>74.96</td>
+                    <td>2.55</td>
+                    <td>2.64</td>
+                    <td>1.00</td>
+                    <td>0.37</td>
+                    <td>0.34</td>
+                    <td>3.27±1.11</td>
+                    <td>2.95±1.09</td>
+                    <td>159M</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>V2A-Mapper†</td>
+                    <td>48.10</td>
+                    <td>2.50</td>
+                    <td>2.34</td>
+                    <td>1.23</td>
+                    <td>0.38</td>
+                    <td>0.32</td>
+                    <td>3.31±1.02</td>
+                    <td>3.16±1.04</td>
+                    <td>229M</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>MMAudio</td>
+                    <td>43.26</td>
+                    <td>1.65</td>
+                    <td>1.40</td>
+                    <td><strong>0.44</strong></td>
+                    <td>0.31</td>
+                    <td>0.40</td>
+                    <td>3.84±0.89</td>
+                    <td>3.97±0.82</td>
+                    <td>1.03B</td>
+                    <td>3.01</td>
+                </tr>
+                <tr>
+                    <td><strong>ThinkSound</strong></td>
+                    <td><strong>34.56</strong></td>
+                    <td><strong>1.52</strong></td>
+                    <td><strong>1.32</strong></td>
+                    <td>0.46</td>
+                    <td>0.33</td>
+                    <td><strong>0.46</strong></td>
+                    <td><strong>4.02±0.73</strong></td>
+                    <td><strong>4.18±0.79</strong></td>
+                    <td>1.30B</td>
+                    <td>1.07</td>
+                </tr>
+                <tr>
+                    <td>w/o CoT Reasoning</td>
+                    <td>39.84</td>
+                    <td>1.59</td>
+                    <td>1.40</td>
+                    <td>0.48</td>
+                    <td>0.29</td>
+                    <td>0.41</td>
+                    <td>3.91±0.83</td>
+                    <td>4.04±0.75</td>
+                    <td>1.30B</td>
+                    <td>0.98</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="ablation-section">
+            <div style="text-align: left;">
+
+                <p><strong>ThinkSound</strong> outperforms all baselines across most objective metrics and all subjective metrics. 
+                    Compared to the strongest baseline (MMAudio), our model achieves substantial improvements in audio quality and semantic alignment, while maintaining comparable temporal synchronization performance on the objective synchronization metric.</p>
+
+            </div>
+        <div style="text-align: left;">
+            <h3> Ablation Studies </h3>
+        </div>
+        <div class="ablation-section">
+            <div style="text-align: left;">
+
+                <p>To better understand the contribution of each component in <strong>ThinkSound</strong> and to validate the effectiveness of our design choices, we conduct comprehensive ablation studies on the VGGSound test set. We mainly focus on: (1) text encoding strategies and (2) multi-modal integration mechanisms. For more ablation and exploratory results, refer to Supplementary Materials D.</p>
+
+                <h3>Text Encoding Strategies</h3>
+                <p>We evaluate different text encoding strategies with or without CoT reasoning. The results are shown in Table 1. First, CoT reasoning substantially improves audio fidelity—for example, FD improves from 39.84 to 37.65 when comparing CLIP-only to T5 with CoT. Second, integrating contrastive features from CLIP with contextual reasoning from T5 further improves performance, reducing both KL<sub>PaSST</sub> and KL<sub>PaNNs</sub>.</p>
+            </div>
+        <table class="ablation-table">
+            <caption>Table 2: Comparison of text encoder fusion strategies (CLAP = CLAP<sub>CoT</sub>)</caption>
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>FD ↓</th>
+                <th>KL<sub>PaSST</sub> ↓</th>
+                <th>KL<sub>PaNNs</sub> ↓</th>
+                <th>DeSync ↓</th>
+                <th>CLAP ↑</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>CLIP</td>
+                <td>39.84</td>
+                <td>1.59</td>
+                <td>1.40</td>
+                <td>0.48</td>
+                <td>0.41</td>
+            </tr>
+            <tr>
+                <td>T5 (CoT)</td>
+                <td>37.65</td>
+                <td>1.54</td>
+                <td>1.35</td>
+                <td>0.46</td>
+                <td>0.44</td>
+            </tr>
+            <tr>
+                <td><strong>CLIP + T5</strong></td>
+                <td><strong>34.56</strong></td>
+                <td><strong>1.52</strong></td>
+                <td><strong>1.32</strong></td>
+                <td><strong>0.46</strong></td>
+                <td><strong>0.46</strong></td>
+            </tr>
+            </tbody>
+        </table>
+        <div style="text-align: left;">
+            <h3>Multi-Modal Integration Mechanisms</h3>
+            <p>We investigate different ways to integrate video and audio features before feeding them into the single-stream transformer. As shown in Table 2, element-wise addition of video and audio features performs better than audio-only input, especially in synchronization (DeSync reduced from 0.50 to 0.46). Moreover, the gated fusion mechanism outperforms both alternatives across all metrics.</p>
+        </div>
+        <table class="ablation-table">
+            <caption>Table 3: Comparison of multi-modal integration mechanisms</caption>
+            <thead>
+            <tr>
+                <th>Integration</th>
+                <th>FD ↓</th>
+                <th>KL<sub>PaSST</sub> ↓</th>
+                <th>KL<sub>PaNNs</sub> ↓</th>
+                <th>DeSync ↓</th>
+                <th>CLAP ↑</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>audio only</td>
+                <td>37.13</td>
+                <td>1.58</td>
+                <td>1.37</td>
+                <td>0.50</td>
+                <td>0.43</td>
+            </tr>
+            <tr>
+                <td>linear video</td>
+                <td>38.96</td>
+                <td>1.58</td>
+                <td>1.38</td>
+                <td>0.46</td>
+                <td>0.45</td>
+            </tr>
+            <tr>
+                <td><strong>gated video</strong></td>
+                <td><strong>34.56</strong></td>
+                <td><strong>1.52</strong></td>
+                <td><strong>1.32</strong></td>
+                <td><strong>0.46</strong></td>
+                <td><strong>0.46</strong></td>
+            </tr>
+            </tbody>
+        </table>
+        <div style="text-align: left;">
+            <h3>Impact of Model Size</h3>
+            <p>We compare three model sizes of ThinkSound: Large (1.3B), Medium (724M), and Small (533M). The results are shown in Table 3. The Large model achieves the best performance across all metrics. As model size decreases, performance degrades substantially, highlighting the necessity of adequate model capacity for effective audio generation.</p>
+        </div>
+            <table class="ablation-table">
+            <caption>Table 4: Impact of model size results.</caption>
+            <thead>
+            <tr>
+                <th>Size</th>
+                <th>FD ↓</th>
+                <th>KL<sub>PaSST</sub> ↓</th>
+                <th>KL<sub>PaNNs</sub> ↓</th>
+                <th>DeSync ↓</th>
+                <th>CLAP<sub>CoT</sub> ↑</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Small</td>
+                <td>40.80</td>
+                <td>1.64</td>
+                <td>1.38</td>
+                <td>0.46</td>
+                <td>0.41</td>
+            </tr>
+            <tr>
+                <td>Medium</td>
+                <td>36.80</td>
+                <td>1.56</td>
+                <td>1.34</td>
+                <td>0.46</td>
+                <td>0.44</td>
+            </tr>
+            <tr>
+                <td>Large</td>
+                <td><strong>34.56</strong></td>
+                <td><strong>1.52</strong></td>
+                <td><strong>1.32</strong></td>
+                <td><strong>0.46</strong></td>
+                <td><strong>0.46</strong></td>
+            </tr>
+            </tbody>
+        </table>
+
+        </div>
+
+        
+
+    <h2 class="chapter-title"> BibTex </h2>
+        <hr class="chapter-line">
+        <div style="width:100%;margin:0 auto;text-align:left;margin-bottom: 30px;"> If you find our work useful, please cite our paper: </div>
+            <div class="container is-max-desktop content", style="text-align: left;">
+              <pre><code>@misc{liu2025thinksoundchainofthoughtreasoningmultimodal,
+    title={ThinkSound: Chain-of-Thought Reasoning in Multimodal Large Language Models for Audio Generation and Editing}, 
+    author={Huadai Liu and Jialei Wang and Kaicheng Luo and Wen Wang and Qian Chen and Zhou Zhao and Wei Xue},
+    year={2025},
+    eprint={2506.21448},
+    archivePrefix={arXiv},
+    primaryClass={eess.AS},
+    url={https://arxiv.org/abs/2506.21448},   
+}</code></pre>
+        </div>
+    </pre></div><div style="height:30px;"></div></div>
+</body>
+</html>
